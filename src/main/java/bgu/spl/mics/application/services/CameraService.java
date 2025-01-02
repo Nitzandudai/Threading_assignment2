@@ -55,7 +55,6 @@ public class CameraService extends MicroService {
         });
 
         this.subscribeBroadcast(TickBroadcast.class, TickBroadcast -> {
-            System.out.println("Camera " + camera.getId() + " Tick " + TickBroadcast.getTick() + " exepted");
             StampedDetectedObjects currTimeObject = camera.next(TickBroadcast.getTick());
 
             //בודקות האם יש שגיאה או האם נגמר מה לשלוח
@@ -74,8 +73,7 @@ public class CameraService extends MicroService {
             } else {
                 detectedWOfreq.add(currTimeObject);
                 // לבדוק אם למצלמה יש מה לשלוח עכשי בעזרת התור כולל freq
-                if (!detectedWOfreq.isEmpty() && TickBroadcast.getTick() >= (detectedWOfreq.peek().getTime() + camera.getFrequency())) {
-                    System.out.println("camera pased the if");
+                while (!detectedWOfreq.isEmpty() && TickBroadcast.getTick() >= (detectedWOfreq.peek().getTime() + camera.getFrequency())) {
                     StampedDetectedObjects toSend = detectedWOfreq.poll();
                     this.sendEvent(new DetectObjectsEvent(toSend, "Camera"+camera.getId()));
                     StatisticalFolder.getInstance().addToNumDetectedObjects(toSend.getDetectedObjects().size());

@@ -60,7 +60,7 @@ public class MessageBusImpl implements MessageBus {
 		synchronized (m) {
 			synchronized (queue) {
 				queue.add(m);
-				System.out.println(m.getName() + " subscribed to event " + type.getSimpleName());
+				// System.out.println(m.getName() + " subscribed to event " + type.getSimpleName());
 			}
 		}
 	}
@@ -73,7 +73,7 @@ public class MessageBusImpl implements MessageBus {
 		synchronized (m) {
 			synchronized (list) {
 				list.add(m);
-				System.out.println(m.getName() + " subscribed to broadcast " + type.getSimpleName());
+				// System.out.println(m.getName() + " subscribed to broadcast " + type.getSimpleName());
 			}
 		}
 	}
@@ -186,7 +186,7 @@ public class MessageBusImpl implements MessageBus {
 	@Override
 	public Message awaitMessage(MicroService m) throws InterruptedException {
 		BlockingQueue<Message> microQueue = PersonalQueues.get(m);
-		System.out.println(m.getName() + " waiting for a message");
+		// System.out.println(m.getName() + " waiting for a message");
 		Message msg = microQueue.take();
 		System.out.println(m.getName() + " received message: " + msg.getClass().getSimpleName());
 		return msg;

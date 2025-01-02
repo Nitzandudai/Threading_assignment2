@@ -27,7 +27,7 @@ public class TimeService extends MicroService {
      */
     public TimeService(int TickTime, int Duration, CountDownLatch latch) {
         super("TimeService", latch);
-        this.TickTime = 1000;
+        this.TickTime = TickTime*1000;
         this.Duration = Duration;
         this.currTime = 1;
 
@@ -49,7 +49,6 @@ public class TimeService extends MicroService {
         });
 
         this.subscribeBroadcast(TickBroadcast.class, TickBroadcast -> {
-            System.out.println("Tick " + TickBroadcast.getTick() + " exepted");
             this.currTime = TickBroadcast.getTick();
             if (Duration < currTime) {
                 sendBroadcast(new ShutAll());
@@ -59,11 +58,11 @@ public class TimeService extends MicroService {
                 Thread.sleep(this.TickTime);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                e.printStackTrace(); // במידה וכן יש לנו INTERRUPT נרצה לדעת מה גרם לזה
+                // e.printStackTrace(); // במידה וכן יש לנו INTERRUPT נרצה לדעת מה גרם לזה
             }
 
             sendBroadcast(new TickBroadcast(this.currTime + 1));
-            StatisticalFolder.getInstance().addTime();
+            StatisticalFolder.getInstance().addToSystemRuntime(1);
         });
 
         // Notify that registration is complete
@@ -74,16 +73,12 @@ public class TimeService extends MicroService {
             getLatch().await();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            System.err.println(getName() + " was interrupted while waiting for latch.");
             return;
         }
 
         // Start by sending the first TickBroadcast
-        System.out.println("Try sending first TickBroadcast.");
-        StatisticalFolder.getInstance().addTime();
-        sendBroadcast(new TickBroadcast(this.currTime));
-        System.out.println("Sending first TickBroadcast.");
-        
+        StatisticalFolder.getInstance().addToSystemRuntime(1);
+        sendBroadcast(new TickBroadcast(this.currTime));        
 
     }
 

@@ -73,7 +73,6 @@ public class FusionSlam {
         LandMark l = landmarks.get(id);
         if (l == null) {
             LandMark output = new LandMark(id, description, coordinates);
-            StatisticalFolder.getInstance().addToNumLandmarks(1);
             this.landmarks.put(id, output);
             StatisticalFolder.getInstance().addToNumLandmarks(1);
             return output;

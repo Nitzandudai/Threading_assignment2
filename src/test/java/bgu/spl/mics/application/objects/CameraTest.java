@@ -23,8 +23,8 @@ public class CameraTest {
         ArrayList<DetectedObject> objectsAtTime2 = new ArrayList<>();
         objectsAtTime2.add(new DetectedObject("obj2", "description2"));
 
-        detectedObjectsList.add(new StampedDetectedObjects(1, objectsAtTime1));
-        detectedObjectsList.add(new StampedDetectedObjects(2, objectsAtTime2));
+        detectedObjectsList.add(new StampedDetectedObjects(1, 1, objectsAtTime1));
+        detectedObjectsList.add(new StampedDetectedObjects(2, 2, objectsAtTime2));
 
         camera = new Camera(1, 2, detectedObjectsList);
     }
@@ -63,7 +63,7 @@ public class CameraTest {
         // Add an ERROR object to the list
         ArrayList<DetectedObject> errorObjects = new ArrayList<>();
         errorObjects.add(new DetectedObject("ERROR", "description"));
-        detectedObjectsList.add(new StampedDetectedObjects(3, errorObjects));
+        detectedObjectsList.add(new StampedDetectedObjects(3, 3, errorObjects));
 
         // Check for error detection
         camera.next(1);

@@ -1,5 +1,7 @@
 package bgu.spl.mics.example.services;
 
+import java.util.concurrent.CountDownLatch;
+
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.example.messages.ExampleBroadcast;
 
@@ -7,8 +9,8 @@ public class ExampleBroadcastListenerService extends MicroService {
 
     private int mbt;
 
-    public ExampleBroadcastListenerService(String name, String[] args) {
-        super(name);
+    public ExampleBroadcastListenerService(String name, String[] args, CountDownLatch latch) {
+        super(name, latch);
 
         if (args.length != 1) {
             throw new IllegalArgumentException("Listener expecting a single argument: mbt (the number of requests to answer before termination)");

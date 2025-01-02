@@ -1,5 +1,7 @@
 package bgu.spl.mics.example.services;
 
+import java.util.concurrent.CountDownLatch;
+
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.example.messages.ExampleEvent;
 
@@ -7,8 +9,8 @@ public class ExampleEventHandlerService extends MicroService {
 
     private int mbt;
 
-    public ExampleEventHandlerService(String name, String[] args) {
-        super(name);
+    public ExampleEventHandlerService(String name, String[] args, CountDownLatch latch) {
+        super(name, latch);
 
         if (args.length != 1) {
             throw new IllegalArgumentException("Event Handler expecting a single argument: mbt (the number of events to answer before termination)");

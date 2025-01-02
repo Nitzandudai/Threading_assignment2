@@ -7,14 +7,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.concurrent.CountDownLatch;
 
 public class ExampleManager {
 
     public static void main(String[] args) {
+        CountDownLatch latch = new CountDownLatch(1); // Example latch for synchronization
+
         Map<String, ServiceCreator> serviceCreators = new HashMap<>();
-        serviceCreators.put("ev-handler", ExampleEventHandlerService::new);
-        serviceCreators.put("brod-listener", ExampleBroadcastListenerService::new);
-        serviceCreators.put("sender", ExampleMessageSenderService::new);
+        serviceCreators.put("ev-handler", (id, params) -> new ExampleEventHandlerService(id, params, latch));
+        serviceCreators.put("brod-listener", (id, params) -> new ExampleBroadcastListenerService(id, params, latch));
+        serviceCreators.put("sender", (id, params) -> new ExampleMessageSenderService(id, params, latch));
 
         Scanner sc = new Scanner(System.in);
         boolean quit = false;

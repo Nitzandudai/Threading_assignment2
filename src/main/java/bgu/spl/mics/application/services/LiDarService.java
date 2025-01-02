@@ -1,8 +1,10 @@
 package bgu.spl.mics.application.services;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
@@ -13,6 +15,7 @@ import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.messages.TrackedObjectsEvent;
 import bgu.spl.mics.application.objects.LiDarWorkerTracker;
 import bgu.spl.mics.application.objects.STATUS;
+import bgu.spl.mics.application.objects.StampedDetectedObjects;
 import bgu.spl.mics.application.objects.StatisticalFolder;
 import bgu.spl.mics.application.objects.TrackedObject;
 
@@ -30,6 +33,7 @@ public class LiDarService extends MicroService {
     private int timeToTerminate;
     private int currTime;
     private ConcurrentHashMap<CompositeKey, DetectObjectsEvent> TrackedOToEvent;
+    private PriorityBlockingQueue<StampedDetectedObjects> StampedObjects;
 
     // ====================================================================================================================
 
@@ -45,7 +49,9 @@ public class LiDarService extends MicroService {
         this.timeToTerminate = lidar.getFrequency();
         this.currTime = 0;
         this.TrackedOToEvent = new ConcurrentHashMap<>();
-
+        Comparator<StampedDetectedObjects> comparator = Comparator.comparingInt(StampedDetectedObjects::getTime);
+        this.StampedObjects = new PriorityBlockingQueue<>(11, comparator);
+        
     }
 
     // ====================================================================================================================
@@ -64,6 +70,7 @@ public class LiDarService extends MicroService {
 
         this.subscribeBroadcast(TickBroadcast.class, TickBroadcast -> {
             this.currTime = TickBroadcast.getTick();
+            // System.out.println("calling MissionPreformer from TickBroadcast, Queue size is: " + this.StampedObjects.size());
             MissionPreformer(this.currTime);
         });
 
@@ -72,10 +79,12 @@ public class LiDarService extends MicroService {
         });
 
         this.subscribeEvent(DetectObjectsEvent.class, DetectObjectsEvent -> {
-            this.lidar.addStampedObjects(DetectObjectsEvent.getObjects().getTime(), DetectObjectsEvent.getObjects());
-            CompositeKey key = new CompositeKey(DetectObjectsEvent.getCameraId(),
-                    DetectObjectsEvent.getObjects().getTime());
+            System.out.println("" + DetectObjectsEvent.getObjects().getDetectedObjects().size() + " objects detected at time " + DetectObjectsEvent.getObjects().getTime());
+            this.StampedObjects.add(DetectObjectsEvent.getObjects());
+            // System.out.println("Queue after adding: " + this.StampedObjects.size());
+            CompositeKey key = new CompositeKey(DetectObjectsEvent.getObjects().getId(),DetectObjectsEvent.getObjects().getTime());
             TrackedOToEvent.putIfAbsent(key, DetectObjectsEvent);
+            // System.out.println("calling MissionPreformer from DetectObjectsEvent, Queue size is: " + this.StampedObjects.size());
             MissionPreformer(this.currTime);
         });
 
@@ -86,55 +95,64 @@ public class LiDarService extends MicroService {
     // ====================================================================================================================
 
     public void MissionPreformer(int time) {
-        ArrayList<TrackedObject> currObject = this.lidar.getTrackedObjects(this.currTime);
-        if (currObject == null) {
-            if (this.lidar.geStatus() == STATUS.DOWN) {
-                timeToTerminate--;
-                if (timeToTerminate == 0) {
-                    sendBroadcast(new TerminatedBroadcast("LiDar" + lidar.getID()));
-                    terminate();
-                }
-            } else {
-                if (this.lidar.geStatus() == STATUS.ERROR) {
-                    sendBroadcast(new CrashedBroadcast(lidar.getID(), "LiDar"));
+        ArrayList<TrackedObject> currObject = new ArrayList<TrackedObject>();
+        // System.out.println("Queue Size Before While: " + this.StampedObjects.size());
+        while (!StampedObjects.isEmpty() && this.StampedObjects.peek().getTime() <= time) {
+            StampedDetectedObjects curr = this.StampedObjects.poll();
+            ArrayList<TrackedObject> toAdd = this.lidar.getTrackedObjects(time, curr);
+            if (toAdd == null) {
+                if (this.lidar.geStatus() == STATUS.DOWN) {
+                    timeToTerminate--;
+                    if (timeToTerminate == 0) {
+                        sendBroadcast(new TerminatedBroadcast("LiDar" + lidar.getID()));
+                        terminate();
+                    }
+                } 
+                if(this.lidar.geStatus() == STATUS.ERROR){
+                    sendBroadcast(new CrashedBroadcast(this.lidar.getID(), "LiDar"));
                     this.terminate();
                 }
             }
-        } else {
-            for (TrackedObject t : currObject) {
-                CompositeKey key = new CompositeKey(t.getId(), t.getTime());
+            else {
+                currObject.addAll(toAdd);
+                CompositeKey key = new CompositeKey(curr.getId(), curr.getTime());
                 DetectObjectsEvent event = TrackedOToEvent.get(key);
-                this.complete(event, currObject);
+                this.complete(event, toAdd);
             }
-            this.sendEvent(new TrackedObjectsEvent(currObject));
-        }
 
-    }
-    // ====================================================================================================================
-
-    // Composite key for map
-    private static class CompositeKey {
-        private final String id;
-        private final int time;
-
-        public CompositeKey(String id, int time) {
-            this.id = id;
-            this.time = time;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-            CompositeKey that = (CompositeKey) o;
-            return time == that.time && id.equals(that.id);
-        }
-
-        @Override
-        public int hashCode() {
-            return 31 * id.hashCode() + time;
+        } 
+        if(!currObject.isEmpty()){
+            System.out.println("Sending TrackedObjectsEvent with " + currObject.size() + " tracked objects.");
+            sendEvent(new TrackedObjectsEvent(currObject));
         }
     }
-}
+        // ====================================================================================================================
+
+        // Composite key for map
+        private static class CompositeKey {
+            private final int id;
+            private final int time;
+
+            public CompositeKey(int id, int time) {
+                this.id = id;
+                this.time = time;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o)
+                    return true;
+                if (o == null || getClass() != o.getClass())
+                    return false;
+                CompositeKey that = (CompositeKey) o;
+                return time == that.time && id == that.id;
+            }
+
+            @Override
+            public int hashCode() {
+                return 31 * id + time;
+            }
+            
+        }
+    }
+

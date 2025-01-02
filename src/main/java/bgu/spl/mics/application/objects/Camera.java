@@ -56,19 +56,19 @@ public class Camera {
                     if (d.getId().equals("ERROR")) {
                         StatisticalFolder.getInstance().setError(d.getDescription(), "Camera" + this.id);
                         StatisticalFolder.getInstance().addToLastDetected(this.id, curr);
-                        StatisticalFolder.getInstance().setError(true);
+                        StatisticalFolder.getInstance().setIfThereIsError(true);
                         this.status = STATUS.ERROR;
                         return null;
                     }
-                    StatisticalFolder.getInstance().addToNumDetectedObjects(curr.getDetectedObjects().size());
-                    this.last = curr;
-                    return curr;
                 }
+
+                // StatisticalFolder.getInstance().addToNumDetectedObjects(1);
+                this.last = curr;
+                return curr;
             } else {
                 return null;
             }
         }
-        return null;
     }
 
     public STATUS getStatus() {

@@ -31,7 +31,8 @@ public class GurionRockRunner {
             Gson gson = new Gson();
 
             // קריאת קובץ הקונפיגורציה
-            Type configType = new TypeToken<Map<String, Object>>() {}.getType();
+            Type configType = new TypeToken<Map<String, Object>>() {
+            }.getType();
             Map<String, Object> config = gson.fromJson(new FileReader(configFilePath), configType);
 
             String cameraDataPath = (String) ((Map<String, Object>) config.get("Cameras")).get("camera_datas_path");
@@ -46,8 +47,10 @@ public class GurionRockRunner {
             LiDarDataBase.getInstance(lidarDataAbsolutePath.toString());
 
             // קריאת נתוני מצלמות מתוך קובץ JSON
-            Type cameraDataType = new TypeToken<Map<String, List<Map<String, Object>>>>() {}.getType();
-            Map<String, List<Map<String, Object>>> cameraData = gson.fromJson(new FileReader(cameraDataAbsolutePath.toString()), cameraDataType);
+            Type cameraDataType = new TypeToken<Map<String, List<Map<String, Object>>>>() {
+            }.getType();
+            Map<String, List<Map<String, Object>>> cameraData = gson
+                    .fromJson(new FileReader(cameraDataAbsolutePath.toString()), cameraDataType);
 
             ArrayList<Camera> cameras = new ArrayList<>();
             for (Map.Entry<String, List<Map<String, Object>>> entry : cameraData.entrySet()) {
@@ -55,6 +58,7 @@ public class GurionRockRunner {
                 List<Map<String, Object>> detectedObjects = entry.getValue();
 
                 ArrayList<StampedDetectedObjects> stampedObjectsList = new ArrayList<>();
+                int stampedObjectId = 1; // Counter for unique IDs
                 for (Map<String, Object> objData : detectedObjects) {
                     int time = ((Double) objData.get("time")).intValue();
                     List<Map<String, String>> objects = (List<Map<String, String>>) objData.get("detectedObjects");
@@ -66,7 +70,7 @@ public class GurionRockRunner {
                         detectedObjectList.add(new DetectedObject(id, description));
                     }
 
-                    stampedObjectsList.add(new StampedDetectedObjects(time, detectedObjectList));
+                    stampedObjectsList.add(new StampedDetectedObjects(time, stampedObjectId++, detectedObjectList));
                 }
 
                 Camera camera = new Camera(Integer.parseInt(cameraId.replace("camera", "")), 1, stampedObjectsList);
@@ -74,8 +78,10 @@ public class GurionRockRunner {
             }
 
             // קריאת נתוני פוזות
-            Type poseDataType = new TypeToken<List<Map<String, Object>>>() {}.getType();
-            List<Map<String, Object>> poseData = gson.fromJson(new FileReader(poseDataAbsolutePath.toString()), poseDataType);
+            Type poseDataType = new TypeToken<List<Map<String, Object>>>() {
+            }.getType();
+            List<Map<String, Object>> poseData = gson.fromJson(new FileReader(poseDataAbsolutePath.toString()),
+                    poseDataType);
 
             ArrayList<Pose> poses = new ArrayList<>();
             for (Map<String, Object> poseEntry : poseData) {
@@ -89,7 +95,8 @@ public class GurionRockRunner {
             GPSIMU gpsimu = new GPSIMU(poses);
 
             // קריאת נתוני LIDAR
-            ArrayList<Map<String, Object>> lidarConfigs = (ArrayList<Map<String, Object>>) ((Map<String, Object>) config.get("LiDarWorkers")).get("LidarConfigurations");
+            ArrayList<Map<String, Object>> lidarConfigs = (ArrayList<Map<String, Object>>) ((Map<String, Object>) config
+                    .get("LiDarWorkers")).get("LidarConfigurations");
             ArrayList<LiDarWorkerTracker> lidars = new ArrayList<>();
             for (Map<String, Object> lidarConfig : lidarConfigs) {
                 int lidarId = ((Double) lidarConfig.get("id")).intValue();
@@ -101,7 +108,8 @@ public class GurionRockRunner {
             System.out.println("Simulation initialized successfully.");
 
             // CountDownLatch אתחול
-            int totalServices = cameras.size() + lidars.size() + 3; // כולל PoseService, FusionSlamService, ו-TimeService
+            int totalServices = cameras.size() + lidars.size() + 3; // כולל PoseService, FusionSlamService,
+                                                                    // ו-TimeService
             CountDownLatch latch = new CountDownLatch(totalServices);
 
             // אתחול חוטים למצלמות, LiDARים ופוזות

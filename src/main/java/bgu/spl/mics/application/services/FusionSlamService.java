@@ -85,6 +85,7 @@ public class FusionSlamService extends MicroService {
         });
 
         this.subscribeEvent(TrackedObjectsEvent.class, TrackedObjectsEvent -> {
+            System.out.println("fusion slam recived tracked objects event");
             ArrayList<TrackedObject> listy = TrackedObjectsEvent.getList();
             Pose posy = fusionSlam.getPose(listy.get(0).getTime() - 1);
             if(posy == null){

@@ -1,5 +1,6 @@
 package bgu.spl.mics.example.services;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import bgu.spl.mics.Future;
@@ -11,8 +12,8 @@ public class ExampleMessageSenderService extends MicroService {
 
     private boolean broadcast;
 
-    public ExampleMessageSenderService(String name, String[] args) {
-        super(name);
+    public ExampleMessageSenderService(String name, String[] args, CountDownLatch latch) {
+        super(name, latch);
 
         if (args.length != 1 || !args[0].matches("broadcast|event")) {
             throw new IllegalArgumentException("expecting a single argument: broadcast/event");

@@ -96,26 +96,6 @@ public class StatisticalFolder {
         this.Poses = poses;
     }
 
-    public void addTime() {
-        System.out.println("Adding Time");
-        this.systemRuntime.incrementAndGet();
-    }
-
-    public void incrementDetectedObjects(int count) {
-        System.out.println("Detected: " + count);
-        this.numDetectedObjects.addAndGet(count);
-    }
-
-    public void incrementTrackedObjects() {
-        System.out.println("Tracked: 1");
-        this.numTrackedObjects.incrementAndGet();
-    }
-
-    public void incrementLandmarks() {
-        System.out.println("Landmarks: 1");
-        this.numLandmarks.incrementAndGet();
-    }
-
     public void addToLastDetected(int cameraId, StampedDetectedObjects detected) {
         System.out.println("Adding Detected by Camera");
         lastDetectedByCamera.putIfAbsent(cameraId, detected);
@@ -127,7 +107,7 @@ public class StatisticalFolder {
         lastTrackedByLidar.get(lidarId).add(tracked);
     }
 
-    public void setError(boolean error) {
+    public void setIfThereIsError(boolean error) {
         System.out.println("Error: " + error);
         this.error = error;
     }

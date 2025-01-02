@@ -1,8 +1,6 @@
 package bgu.spl.mics.application.objects;
 
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.PriorityQueue;
 
 /**
  * LiDarWorkerTracker is responsible for managing a LiDAR worker.
@@ -15,7 +13,6 @@ public class LiDarWorkerTracker {
     private int frequency;
     private STATUS status;
     private ArrayList<TrackedObject> lastTrackedObjects;
-    private PriorityQueue<StampedDetectedObjects> StampedObjects;
 
     // ====================================================================================================================
     /**
@@ -35,22 +32,6 @@ public class LiDarWorkerTracker {
         this.frequency = frequency;
         this.status = STATUS.UP;
         this.lastTrackedObjects = new ArrayList<TrackedObject>();
-        this.StampedObjects = new PriorityQueue<>(
-        Comparator.comparingInt(StampedDetectedObjects -> StampedDetectedObjects.getTime()));
-    }
-
-    // ====================================================================================================================
-    /**
-     * Adds a new stamped detected object to the priority queue.
-     * 
-     * @param time                   the timestamp of the detected object
-     * @param stampedDetectedObjects the detected object to add
-     * 
-     * @pre stampedDetectedObjects != null
-     * @post StampedObjects.size() == @prev(StampedObjects.size()) + 1
-     */
-    public void addStampedObjects(int time, StampedDetectedObjects stampedDetectedObjects) {
-        StampedObjects.add(stampedDetectedObjects);
     }
 
     // ====================================================================================================================
@@ -66,40 +47,34 @@ public class LiDarWorkerTracker {
      * @post geStatus() == STATUS.ERROR if an error is found in LiDarDataBase
      */
 
-    public ArrayList<TrackedObject> getTrackedObjects(int time) {
+    public ArrayList<TrackedObject> getTrackedObjects(int time, StampedDetectedObjects StampedDetectedObjects) {
         if (LiDarDataBase.getInstance(null).isDONE() == true) {
             this.status = STATUS.DOWN;
             return null;
         }
-        if (LiDarDataBase.getInstance(null).findError(0) == true) {
-            StatisticalFolder.getInstance().setError("disconnected","LiDar" + this.id); //לא יודעת מה התיאור אבל רשמתי משהו
-            StatisticalFolder.getInstance().addToLastTracked(this.id, this.lastTrackedObjects.get(this.lastTrackedObjects.size()-1));
-            StatisticalFolder.getInstance().setError(true);
+        if (LiDarDataBase.getInstance(null).findError(time) == true) {
+            StatisticalFolder.getInstance().setError("disconnected", "LiDar" + this.id); // לא יודעת מה התיאור אבל רשמתי
+                                                                                         // משהו
+            StatisticalFolder.getInstance().addToLastTracked(this.id,
+                    this.lastTrackedObjects.get(this.lastTrackedObjects.size() - 1));
+            StatisticalFolder.getInstance().setIfThereIsError(true);
             this.status = STATUS.ERROR;
             return null;
         } else {
             ArrayList<TrackedObject> output = new ArrayList<>();
-            while (StampedObjects.peek()!=null && StampedObjects.peek().getTime() + this.frequency <= time) {
-                StampedDetectedObjects stamped = StampedObjects.poll();
-                for (DetectedObject d : stamped.getDetectedObjects()) {
-                    String id = d.getId();
-                    String description = d.getDescription();
-                    int reveilingTime = stamped.getTime();
-                    ArrayList<CloudPoint> cloudy = LiDarDataBase.getInstance(null).findPoints(id, time);
+            for (DetectedObject d : StampedDetectedObjects.getDetectedObjects()) {
+                String id = d.getId();
+                String description = d.getDescription();
+                int reveilingTime = StampedDetectedObjects.getTime();
+                ArrayList<CloudPoint> cloudy = LiDarDataBase.getInstance(null).findPoints(id, reveilingTime);
 
-                    TrackedObject tracky = new TrackedObject(id, reveilingTime, description, cloudy);
-                    this.lastTrackedObjects.add(tracky); //מוסיפות לרשימה של אוביקטים שנצפו
-                    output.add(tracky);//מוסיפות לרשימה שנחזיר בסוף
-                    LiDarDataBase.getInstance(null).add1();//מעדכנות שמצאנו עוד אוביקט לטובת מעקב אחר האם נגמר על מה לעקוב
-                    StatisticalFolder.getInstance().addToNumDetectedObjects(1); //מוסיפות לSTAT FOLDER שמצאנו עוד אוביקט
-                    // this.addTracked(tracky);
-                }
+                TrackedObject tracky = new TrackedObject(id, reveilingTime, description, cloudy);
+                this.lastTrackedObjects.add(tracky); // מוסיפות לרשימה של אוביקטים שנצפו
+                output.add(tracky);// מוסיפות לרשימה שנחזיר בסוף
+                LiDarDataBase.getInstance(null).add1();//מעדכנות שמצאנו עוד אוביקט לטובת מעקב אחר האם נגמר על מה לעקוב
+                StatisticalFolder.getInstance().addToNumTrackedObjects(1); // מוסיפות לSTAT FOLDER שמצאנו עוד אוביקט
             }
-            if (output.isEmpty()) {
-                return null;
-            } else {
-                return output;
-            }
+            return output;
         }
     }
 
@@ -116,16 +91,8 @@ public class LiDarWorkerTracker {
         return this.status;
     }
 
-    // public void addTracked(TrackedObject lasty) {
-    //     lastTrackedObjects.add(lasty);
-    // }
-
-    public int getStampedQueueSize() {
-        return StampedObjects.size();
-    }
-
-    public TrackedObject getLast (){
-        return lastTrackedObjects.get(lastTrackedObjects.size()-1);
+    public TrackedObject getLast() {
+        return lastTrackedObjects.get(lastTrackedObjects.size() - 1);
     }
 
 }

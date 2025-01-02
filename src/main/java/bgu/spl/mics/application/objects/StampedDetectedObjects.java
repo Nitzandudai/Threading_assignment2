@@ -8,25 +8,30 @@ import java.util.ArrayList;
  */
 public class StampedDetectedObjects {
     private int time;
+    private int id;
     private ArrayList<DetectedObject> DetectedObjects;
 
+    public StampedDetectedObjects(int time, int id, ArrayList<DetectedObject> DetectedObjects) {
+        this.time = time;
+        this.id = id;
+        this.DetectedObjects = DetectedObjects;
 
-public StampedDetectedObjects(int time, ArrayList<DetectedObject> DetectedObjects){
-    this.time = time;
-    this.DetectedObjects = DetectedObjects;
-    
     }
 
-public int getTime (){
-    return this.time;
-}
+    public int getTime() {
+        return this.time;
+    }
 
-public ArrayList<DetectedObject> getDetectedObjects(){
-    return this.DetectedObjects;
-}
+    public ArrayList<DetectedObject> getDetectedObjects() {
+        return this.DetectedObjects;
+    }
 
-public boolean isEmpty(){
-    return (this.DetectedObjects.size() == 0);
-}
+    public boolean isEmpty() {
+        return (this.DetectedObjects.size() == 0);
+    }
 
+    public int getId() {
+        return this.id;
+
+    }
 }

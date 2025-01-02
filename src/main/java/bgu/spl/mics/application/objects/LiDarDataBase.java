@@ -86,7 +86,12 @@ public class LiDarDataBase {
     public ArrayList<CloudPoint> findPoints(String id, int time) {
         CompositeKey key = new CompositeKey(id, time);
         StampedCloudPoints stamped = cloudPointsMap.get(key);
-        return stamped != null ? stamped.getList() : null;
+        if(stamped == null){
+            return null;
+        }
+        else{
+            return stamped.getList();
+        }
     }
 //====================================================================================================================
 
@@ -133,7 +138,7 @@ public class LiDarDataBase {
                     CompositeKey key = new CompositeKey(id, time);
                     instance.cloudPointsMap.put(key, stamped);
                 }
-    
+                System.out.println("LiDarDataBase: " + instance.cloudPointsMap.size() + " entries loaded.");
                 return instance;
     
             } catch (IOException e) {
