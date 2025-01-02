@@ -1,0 +1,57 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Run GurionRockRunner",
+            "request": "launch",
+            "mainClass": "bgu.spl.mics.application.GurionRockRunner",
+            "projectName": "spl225ass2",
+            "args": ["C:\\Users\\nitza\\OneDrive\\Desktop\\System_Programing\\SPL2new\\example input\\configuration_file.json"]
+        },
+        {
+            "type": "java",
+            "name": "Run ExampleManager",
+            "request": "launch",
+            "mainClass": "bgu.spl.mics.example.ExampleManager",
+            "projectName": "spl225ass2"
+        },
+        {
+            "type": "java",
+            "name": "Run All Tests",
+            "request": "launch",
+            "mainClass": "",
+            "projectName": "spl225ass2",
+            "args": []
+        },
+        {
+            "type": "java",
+            "name": "Run Current File",
+            "request": "launch",
+            "mainClass": "${file}",
+            "projectName": "spl225ass2"
+        },
+        {
+            "type": "java",
+            "name": "Run Single Test Class",
+            "request": "launch",
+            "mainClass": "org.junit.platform.console.ConsoleLauncher",
+            "args": [
+                "--select-class",
+                "bgu.spl.mics.FutureTest"
+            ],
+            "projectName": "spl225ass2"
+        },
+        {
+            "type": "java",
+            "name": "Run Single Test Method",
+            "request": "launch",
+            "mainClass": "org.junit.platform.console.ConsoleLauncher",
+            "args": [
+                "--select-method",
+                "bgu.spl.mics.FutureTest#testResolveAndGet"
+            ],
+            "projectName": "spl225ass2"
+        }
+    ]
+}

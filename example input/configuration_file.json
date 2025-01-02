@@ -1,0 +1,24 @@
+{
+  "Cameras": {
+    "CamerasConfigurations": [
+      {
+        "id": 1,
+        "frequency": 0,
+        "camera_key": "camera1"
+      }
+    ],
+    "camera_datas_path": "C:\\Users\\nitza\\OneDrive\\Desktop\\System_Programing\\SPL2new\\example input\\camera_data.json"
+  },
+  "LiDarWorkers": {
+    "LidarConfigurations": [
+      {
+        "id": 1,
+        "frequency": 0
+      }
+    ],
+    "lidars_data_path": "C:\\Users\\nitza\\OneDrive\\Desktop\\System_Programing\\SPL2new\\example input\\lidar_data.json"
+  },
+  "poseJsonFile": "C:\\Users\\nitza\\OneDrive\\Desktop\\System_Programing\\SPL2new\\example input\\pose_data.json",
+  "TickTime": 1,
+  "Duration": 30
+}
