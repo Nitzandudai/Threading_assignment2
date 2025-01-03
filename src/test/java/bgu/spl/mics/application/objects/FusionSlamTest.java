@@ -18,6 +18,7 @@ public class FusionSlamTest {
         fusionSlam = FusionSlam.getInstance();
         pose = new Pose(0.0f, 0.0f, 0.0f, 0);
 
+        
         // יצירת רשימה של אובייקטים למעקב
         trackedObjects = new ArrayList<>();
 

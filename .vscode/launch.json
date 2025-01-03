@@ -7,7 +7,7 @@
             "request": "launch",
             "mainClass": "bgu.spl.mics.application.GurionRockRunner",
             "projectName": "spl225ass2",
-            "args": ["C:\\Users\\nitza\\OneDrive\\Desktop\\System_Programing\\SPL2new\\example input\\configuration_file.json"]
+            "args": ["C:\\Users\\nitza\\OneDrive\\Desktop\\System_Programing\\SPL2new\\example_input_2\\configuration_file.json"]
         },
         {
             "type": "java",

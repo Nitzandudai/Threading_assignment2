@@ -55,7 +55,7 @@ public class Camera {
                 for (DetectedObject d : curr.getDetectedObjects()) {
                     if (d.getId().equals("ERROR")) {
                         StatisticalFolder.getInstance().setError(d.getDescription(), "Camera" + this.id);
-                        StatisticalFolder.getInstance().addToLastDetected(this.id, curr);
+                        StatisticalFolder.getInstance().addToLastDetected(this.id, last);
                         StatisticalFolder.getInstance().setIfThereIsError(true);
                         this.status = STATUS.ERROR;
                         return null;

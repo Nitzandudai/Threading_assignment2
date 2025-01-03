@@ -77,37 +77,6 @@ public class LiDarWorkerTracker {
         return output;
     }
 
-    // public ArrayList<TrackedObject> getTrackedObjects(int time, StampedDetectedObjects StampedDetectedObjects) {
-    //     if (LiDarDataBase.getInstance(null).isDONE() == true) {
-    //         this.status = STATUS.DOWN;
-    //         return null;
-    //     }
-    //     if (LiDarDataBase.getInstance(null).findError(time) == true) {
-    //         StatisticalFolder.getInstance().setError("disconnected", "LiDar" + this.id); // לא יודעת מה התיאור אבל רשמתי
-    //                                                                                      // משהו
-    //         StatisticalFolder.getInstance().addToLastTracked(this.id,
-    //                 this.lastTrackedObjects.get(this.lastTrackedObjects.size() - 1));
-    //         StatisticalFolder.getInstance().setIfThereIsError(true);
-    //         this.status = STATUS.ERROR;
-    //         return null;
-    //     } else {
-        //     ArrayList<TrackedObject> output = new ArrayList<>();
-        //     for (DetectedObject d : StampedDetectedObjects.getDetectedObjects()) {
-        //         String id = d.getId();
-        //         String description = d.getDescription();
-        //         int reveilingTime = StampedDetectedObjects.getTime();
-        //         ArrayList<CloudPoint> cloudy = LiDarDataBase.getInstance(null).findPoints(id, reveilingTime);
-
-        //         TrackedObject tracky = new TrackedObject(id, reveilingTime, description, cloudy);
-        //         this.lastTrackedObjects.add(tracky); // מוסיפות לרשימה של אוביקטים שנצפו
-        //         output.add(tracky);// מוסיפות לרשימה שנחזיר בסוף
-        //         LiDarDataBase.getInstance(null).add1();// מעדכנות שמצאנו עוד אוביקט לטובת מעקב אחר האם נגמר על מה לעקוב
-        //         StatisticalFolder.getInstance().addToNumTrackedObjects(1); // מוסיפות לSTAT FOLDER שמצאנו עוד אוביקט
-        //     }
-        //     return output;
-    //     // }
-    // }
-
     // ====================================================================================================================
     public int getID() {
         return this.id;
