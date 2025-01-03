@@ -62,22 +62,19 @@ public class StatisticalFolder {
     }
 
     public void addToSystemRuntime(int runtime) {
-        System.out.println("Runtime: " + runtime);
         this.systemRuntime.addAndGet(runtime);
+        System.out.println("Runtime: " + this.getSystemRuntime());
     }
 
     public void addToNumDetectedObjects(int count) {
-        System.out.println("Detected: " + count);
         this.numDetectedObjects.addAndGet(count);
     }
 
     public void addToNumTrackedObjects(int count) {
-        System.out.println("Tracked: " + count);
         this.numTrackedObjects.addAndGet(count);
     }
 
     public void addToNumLandmarks(int count) {
-        System.out.println("Landmarks: " + count);
         this.numLandmarks.addAndGet(count);
     }
 

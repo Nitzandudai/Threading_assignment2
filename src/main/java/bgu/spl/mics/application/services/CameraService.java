@@ -11,6 +11,7 @@ import bgu.spl.mics.application.messages.ShutAll;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.objects.Camera;
+import bgu.spl.mics.application.objects.DetectedObject;
 import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.objects.StampedDetectedObjects;
 import bgu.spl.mics.application.objects.StatisticalFolder;
@@ -72,11 +73,14 @@ public class CameraService extends MicroService {
                 }
             } else {
                 detectedWOfreq.add(currTimeObject);
+
                 // לבדוק אם למצלמה יש מה לשלוח עכשי בעזרת התור כולל freq
                 while (!detectedWOfreq.isEmpty() && TickBroadcast.getTick() >= (detectedWOfreq.peek().getTime() + camera.getFrequency())) {
                     StampedDetectedObjects toSend = detectedWOfreq.poll();
                     this.sendEvent(new DetectObjectsEvent(toSend, "Camera"+camera.getId()));
                     StatisticalFolder.getInstance().addToNumDetectedObjects(toSend.getDetectedObjects().size());
+                    for(DetectedObject s : toSend.getDetectedObjects()){
+                    }
                 }
             }
         });

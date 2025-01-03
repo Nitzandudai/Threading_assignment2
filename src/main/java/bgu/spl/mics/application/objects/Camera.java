@@ -61,8 +61,6 @@ public class Camera {
                         return null;
                     }
                 }
-
-                // StatisticalFolder.getInstance().addToNumDetectedObjects(1);
                 this.last = curr;
                 return curr;
             } else {

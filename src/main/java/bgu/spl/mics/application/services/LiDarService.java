@@ -51,7 +51,7 @@ public class LiDarService extends MicroService {
         this.TrackedOToEvent = new ConcurrentHashMap<>();
         Comparator<StampedDetectedObjects> comparator = Comparator.comparingInt(StampedDetectedObjects::getTime);
         this.StampedObjects = new PriorityBlockingQueue<>(11, comparator);
-        
+
     }
 
     // ====================================================================================================================
@@ -70,21 +70,18 @@ public class LiDarService extends MicroService {
 
         this.subscribeBroadcast(TickBroadcast.class, TickBroadcast -> {
             this.currTime = TickBroadcast.getTick();
-            // System.out.println("calling MissionPreformer from TickBroadcast, Queue size is: " + this.StampedObjects.size());
             MissionPreformer(this.currTime);
         });
 
-        this.subscribeBroadcast(ShutAll.class, ShutAll ->{
-        this.terminate();
+        this.subscribeBroadcast(ShutAll.class, ShutAll -> {
+            this.terminate();
         });
 
         this.subscribeEvent(DetectObjectsEvent.class, DetectObjectsEvent -> {
-            System.out.println("" + DetectObjectsEvent.getObjects().getDetectedObjects().size() + " objects detected at time " + DetectObjectsEvent.getObjects().getTime());
             this.StampedObjects.add(DetectObjectsEvent.getObjects());
-            // System.out.println("Queue after adding: " + this.StampedObjects.size());
-            CompositeKey key = new CompositeKey(DetectObjectsEvent.getObjects().getId(),DetectObjectsEvent.getObjects().getTime());
+            CompositeKey key = new CompositeKey(DetectObjectsEvent.getObjects().getId(),
+                    DetectObjectsEvent.getObjects().getTime());
             TrackedOToEvent.putIfAbsent(key, DetectObjectsEvent);
-            // System.out.println("calling MissionPreformer from DetectObjectsEvent, Queue size is: " + this.StampedObjects.size());
             MissionPreformer(this.currTime);
         });
 
@@ -95,64 +92,59 @@ public class LiDarService extends MicroService {
     // ====================================================================================================================
 
     public void MissionPreformer(int time) {
+        this.lidar.findErrorOrDown(time);
+        if (this.lidar.geStatus() == STATUS.DOWN) {
+            timeToTerminate--;
+            if (timeToTerminate <= 0) {
+                sendBroadcast(new TerminatedBroadcast("LiDar" + lidar.getID()));
+                this.terminate();
+            }
+        }
+        if (this.lidar.geStatus() == STATUS.ERROR) {
+            sendBroadcast(new CrashedBroadcast(this.lidar.getID(), "LiDar"));
+            this.terminate();
+        }
+
         ArrayList<TrackedObject> currObject = new ArrayList<TrackedObject>();
-        // System.out.println("Queue Size Before While: " + this.StampedObjects.size());
         while (!StampedObjects.isEmpty() && this.StampedObjects.peek().getTime() <= time) {
             StampedDetectedObjects curr = this.StampedObjects.poll();
-            ArrayList<TrackedObject> toAdd = this.lidar.getTrackedObjects(time, curr);
-            if (toAdd == null) {
-                if (this.lidar.geStatus() == STATUS.DOWN) {
-                    timeToTerminate--;
-                    if (timeToTerminate == 0) {
-                        sendBroadcast(new TerminatedBroadcast("LiDar" + lidar.getID()));
-                        terminate();
-                    }
-                } 
-                if(this.lidar.geStatus() == STATUS.ERROR){
-                    sendBroadcast(new CrashedBroadcast(this.lidar.getID(), "LiDar"));
-                    this.terminate();
-                }
-            }
-            else {
-                currObject.addAll(toAdd);
-                CompositeKey key = new CompositeKey(curr.getId(), curr.getTime());
-                DetectObjectsEvent event = TrackedOToEvent.get(key);
-                this.complete(event, toAdd);
-            }
-
-        } 
-        if(!currObject.isEmpty()){
+            ArrayList<TrackedObject> toAdd = this.lidar.getTrackedObjects(curr);
+            currObject.addAll(toAdd);
+            CompositeKey key = new CompositeKey(curr.getId(), curr.getTime());
+            DetectObjectsEvent event = TrackedOToEvent.get(key);
+            this.complete(event, toAdd);
+        }
+        if (!currObject.isEmpty()) {
             System.out.println("Sending TrackedObjectsEvent with " + currObject.size() + " tracked objects.");
             sendEvent(new TrackedObjectsEvent(currObject));
         }
     }
-        // ====================================================================================================================
+    // ====================================================================================================================
 
-        // Composite key for map
-        private static class CompositeKey {
-            private final int id;
-            private final int time;
+    // Composite key for map
+    private static class CompositeKey {
+        private final int id;
+        private final int time;
 
-            public CompositeKey(int id, int time) {
-                this.id = id;
-                this.time = time;
-            }
-
-            @Override
-            public boolean equals(Object o) {
-                if (this == o)
-                    return true;
-                if (o == null || getClass() != o.getClass())
-                    return false;
-                CompositeKey that = (CompositeKey) o;
-                return time == that.time && id == that.id;
-            }
-
-            @Override
-            public int hashCode() {
-                return 31 * id + time;
-            }
-            
+        public CompositeKey(int id, int time) {
+            this.id = id;
+            this.time = time;
         }
-    }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            CompositeKey that = (CompositeKey) o;
+            return time == that.time && id == that.id;
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * id + time;
+        }
+
+    }
+}

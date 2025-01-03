@@ -58,7 +58,6 @@ public class TimeService extends MicroService {
                 Thread.sleep(this.TickTime);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                // e.printStackTrace(); // במידה וכן יש לנו INTERRUPT נרצה לדעת מה גרם לזה
             }
 
             sendBroadcast(new TickBroadcast(this.currTime + 1));

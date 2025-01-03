@@ -77,7 +77,9 @@ public class FusionSlamService extends MicroService {
         });
 
         this.subscribeBroadcast(TerminatedBroadcast.class, TerminatedBroadcast -> {
+            System.out.println("1. Alive Sensor befor: " + this.aliveSensor);
             this.aliveSensor--;
+            System.out.println("1. Alive Sensor after: " + this.aliveSensor + "sensor "+ TerminatedBroadcast.getName());
             if (this.aliveSensor == 0) {
                 sendBroadcast(new ShutAll());
                 this.terminate();
@@ -85,7 +87,6 @@ public class FusionSlamService extends MicroService {
         });
 
         this.subscribeEvent(TrackedObjectsEvent.class, TrackedObjectsEvent -> {
-            System.out.println("fusion slam recived tracked objects event");
             ArrayList<TrackedObject> listy = TrackedObjectsEvent.getList();
             Pose posy = fusionSlam.getPose(listy.get(0).getTime() - 1);
             if(posy == null){

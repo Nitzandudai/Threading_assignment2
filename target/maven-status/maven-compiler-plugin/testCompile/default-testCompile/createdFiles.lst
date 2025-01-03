@@ -1,2 +1,4 @@
-bgu\spl\mics\application\services\CameraServiceTest.class
 bgu\spl\mics\FutureTest.class
+bgu\spl\mics\MessageBusImplTest.class
+bgu\spl\mics\application\objects\CameraTest.class
+bgu\spl\mics\application\objects\FusionSlamTest.class

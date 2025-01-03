@@ -73,7 +73,14 @@ public class GurionRockRunner {
                     stampedObjectsList.add(new StampedDetectedObjects(time, stampedObjectId++, detectedObjectList));
                 }
 
-                Camera camera = new Camera(Integer.parseInt(cameraId.replace("camera", "")), 1, stampedObjectsList);
+                int frequency = ((Double) ((List<Map<String, Object>>) ((Map<String, Object>) config.get("Cameras"))
+                        .get("CamerasConfigurations")).stream()
+                        .filter(cam -> ((Double) cam.get("id")).intValue() == Integer.parseInt(cameraId.replace("camera", "")))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("Camera not found"))
+                        .get("frequency")).intValue();
+
+                Camera camera = new Camera(Integer.parseInt(cameraId.replace("camera", "")), frequency, stampedObjectsList);
                 cameras.add(camera);
             }
 
