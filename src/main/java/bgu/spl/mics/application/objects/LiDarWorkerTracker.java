@@ -73,6 +73,7 @@ public class LiDarWorkerTracker {
             LiDarDataBase.getInstance(null).add1();// מעדכנות שמצאנו עוד אוביקט לטובת מעקב אחר האם נגמר על מה לעקוב
             StatisticalFolder.getInstance().addToNumTrackedObjects(1); // מוסיפות לSTAT FOLDER שמצאנו עוד אוביקט
         }
+        System.out.println("size in Worker "+ output.size());
         return output;
     }
 
