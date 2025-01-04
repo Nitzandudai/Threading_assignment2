@@ -313,9 +313,9 @@
   ],
   "faultySensor": "Camera1",
   "statistics": {
-    "numTrackedObjects": 28,
     "systemRuntime": 9,
-    "numDetectedObjects": 28,
-    "numLandmarks": 12
+    "numTrackedObjects": 28,
+    "numLandmarks": 9,
+    "numDetectedObjects": 28
   }
 }
