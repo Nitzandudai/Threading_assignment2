@@ -1,17 +1,14 @@
 package bgu.spl.mics;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import bgu.spl.mics.example.messages.ExampleBroadcast;
@@ -22,15 +19,33 @@ import bgu.spl.mics.example.services.ExampleMessageSenderService;
 
 public class MessageBusImplTest {
 
+    private MessageBusImpl messageBus;
+    private ArrayList<MicroService> registeredServices;
+
+    @BeforeEach
+    public void setUp() {
+        messageBus = MessageBusImpl.getInstance();
+        registeredServices = new ArrayList<>();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        // ביטול רישום לכל השירותים שנרשמו במהלך הטסט
+        for (MicroService service : registeredServices) {
+            messageBus.unregister(service);
+        }
+        registeredServices.clear();
+    }
+
     @Test
     public void subscribeEventTest() {
-        MessageBusImpl messageBus = MessageBusImpl.getInstance();
         CountDownLatch latch = new CountDownLatch(1);
-
         ExampleEventHandlerService handler1 = new ExampleEventHandlerService("Handler1", new String[]{"2"}, latch);
         ExampleEvent event = new ExampleEvent("TestEvent");
 
         messageBus.register(handler1);
+        registeredServices.add(handler1);
+
         messageBus.subscribeEvent(event.getClass(), handler1);
 
         Queue<MicroService> subscribers = messageBus.getEventSub(event.getClass());
@@ -42,7 +57,6 @@ public class MessageBusImplTest {
 
     @Test
     public void subscribeBroadcastTest() {
-        MessageBusImpl messageBus = MessageBusImpl.getInstance();
         CountDownLatch latch = new CountDownLatch(1);
 
         ExampleBroadcastListenerService listener1 = new ExampleBroadcastListenerService("Listener1", new String[]{"5"}, latch);
@@ -50,6 +64,8 @@ public class MessageBusImplTest {
 
         messageBus.register(listener1);
         messageBus.register(listener2);
+        registeredServices.add(listener1);
+        registeredServices.add(listener2);
 
         messageBus.subscribeBroadcast(ExampleBroadcast.class, listener1);
         messageBus.subscribeBroadcast(ExampleBroadcast.class, listener2);
@@ -64,15 +80,17 @@ public class MessageBusImplTest {
 
     @Test
     public void completeTest() {
-        MessageBusImpl messageBus = MessageBusImpl.getInstance();
         CountDownLatch latch = new CountDownLatch(1);
 
         ExampleEvent event = new ExampleEvent("TestSender");
         MicroService handler = new ExampleBroadcastListenerService("Handler", new String[]{"1"}, latch);
+
         messageBus.register(handler);
+        registeredServices.add(handler);
+
         messageBus.subscribeEvent(event.getClass(), handler);
 
-        Future<String> future = (Future<String>) messageBus.sendEvent(event);
+        Future<String> future = messageBus.sendEvent(event);
 
         messageBus.complete(event, "Completed");
 
@@ -82,7 +100,6 @@ public class MessageBusImplTest {
 
     @Test
     public void sendBroadcastTest() throws InterruptedException {
-        MessageBusImpl messageBus = MessageBusImpl.getInstance();
         CountDownLatch latch = new CountDownLatch(1);
 
         ExampleBroadcastListenerService listener1 = new ExampleBroadcastListenerService("Listener1", new String[]{"2"}, latch);
@@ -91,6 +108,9 @@ public class MessageBusImplTest {
 
         messageBus.register(listener1);
         messageBus.register(listener2);
+        registeredServices.add(listener1);
+        registeredServices.add(listener2);
+
         messageBus.subscribeBroadcast(ExampleBroadcast.class, listener1);
         messageBus.subscribeBroadcast(ExampleBroadcast.class, listener2);
 
@@ -105,13 +125,14 @@ public class MessageBusImplTest {
 
     @Test
     public void sendEventTest() throws InterruptedException {
-        MessageBusImpl messageBus = MessageBusImpl.getInstance();
         CountDownLatch latch = new CountDownLatch(1);
 
         ExampleEvent event = new ExampleEvent("TestEvent");
         MicroService handler = new ExampleBroadcastListenerService("Handler", new String[]{"1"}, latch);
 
         messageBus.register(handler);
+        registeredServices.add(handler);
+
         messageBus.subscribeEvent(event.getClass(), handler);
 
         Future<String> future = messageBus.sendEvent(event);
@@ -123,15 +144,16 @@ public class MessageBusImplTest {
 
     @Test
     public void registerMicroServiceTest() {
-        MessageBusImpl messageBus = MessageBusImpl.getInstance();
         CountDownLatch latch = new CountDownLatch(1);
 
         MicroService eventHandler = new ExampleEventHandlerService("EventHandler", new String[]{"5"}, latch);
         messageBus.register(eventHandler);
+        registeredServices.add(eventHandler);
         assertNotNull(messageBus.getPersonalQueues(eventHandler));
 
         MicroService messageSender = new ExampleMessageSenderService("MessageSender", new String[]{"event"}, latch);
         messageBus.register(messageSender);
+        registeredServices.add(messageSender);
         assertNotNull(messageBus.getPersonalQueues(messageSender));
 
         assertNotSame(messageBus.getPersonalQueues(messageSender), messageBus.getPersonalQueues(eventHandler));
@@ -139,7 +161,6 @@ public class MessageBusImplTest {
 
     @Test
     public void testUnregister() {
-        MessageBusImpl messageBus = MessageBusImpl.getInstance();
         CountDownLatch latch = new CountDownLatch(1);
 
         MicroService broadcastListener = new ExampleBroadcastListenerService("BroadcastListener", new String[]{"1"}, latch);
@@ -149,6 +170,9 @@ public class MessageBusImplTest {
         messageBus.register(broadcastListener);
         messageBus.register(eventHandler);
         messageBus.register(sender);
+        registeredServices.add(broadcastListener);
+        registeredServices.add(eventHandler);
+        registeredServices.add(sender);
 
         messageBus.subscribeBroadcast(ExampleBroadcast.class, broadcastListener);
         messageBus.subscribeEvent(ExampleEvent.class, eventHandler);
@@ -172,13 +196,16 @@ public class MessageBusImplTest {
 
     @Test
     public void testAwaitMessage() throws InterruptedException {
-        MessageBusImpl messageBus = MessageBusImpl.getInstance();
         CountDownLatch latch = new CountDownLatch(1);
 
         ExampleEvent event = new ExampleEvent("testEvent");
         MicroService eventHandler = new ExampleEventHandlerService("EventHandler", new String[]{"1"}, latch);
+
         messageBus.register(eventHandler);
+        registeredServices.add(eventHandler);
+
         messageBus.subscribeEvent(ExampleEvent.class, eventHandler);
+
         messageBus.sendEvent(event);
         assertEquals(event, messageBus.awaitMessage(eventHandler));
     }

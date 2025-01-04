@@ -109,14 +109,12 @@ public class LiDarService extends MicroService {
         while (!StampedObjects.isEmpty() && this.StampedObjects.peek().getTime() <= time) {
             StampedDetectedObjects curr = this.StampedObjects.poll();
             ArrayList<TrackedObject> toAdd = this.lidar.getTrackedObjects(curr);
-            System.out.println("size in service" + toAdd.size());
             currObject.addAll(toAdd);
             CompositeKey key = new CompositeKey(curr.getId(), curr.getTime());
             DetectObjectsEvent event = TrackedOToEvent.get(key);
             this.complete(event, toAdd);
         }
         if (!currObject.isEmpty()) {
-            System.out.println("Sending TrackedObjectsEvent with " + currObject.size() + " tracked objects.");
             sendEvent(new TrackedObjectsEvent(currObject));
         }
     }

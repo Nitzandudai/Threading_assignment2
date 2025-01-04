@@ -56,14 +56,12 @@ public class StatisticalFolder {
 
     // Setters and Incrementers
     public void setError(String errorDescription, String faultySensor) {
-        System.out.println("Error: " + errorDescription);
         this.errorDescription = errorDescription;
         this.faultySensor = faultySensor;
     }
 
     public void addToSystemRuntime(int runtime) {
         this.systemRuntime.addAndGet(runtime);
-        System.out.println("Runtime: " + this.getSystemRuntime());
     }
 
     public void addToNumDetectedObjects(int count) {
@@ -79,33 +77,27 @@ public class StatisticalFolder {
     }
 
     public void setLastTrackedByLidar(Map<Integer, List<TrackedObject>> trackedByLidar) {
-        System.out.println("Updating Tracked by Lidar");
         this.lastTrackedByLidar = trackedByLidar;
     }
 
     public void setLandmarks(HashMap<String, LandMark> landmarks) {
-        System.out.println("Updating Landmarks");
         this.landmarks = landmarks;
     }
 
     public void setPoses(ArrayList<Pose> poses) {
-        System.out.println("Updating Poses");
         this.Poses = poses;
     }
 
     public void addToLastDetected(int cameraId, StampedDetectedObjects detected) {
-        System.out.println("Adding Detected by Camera");
         lastDetectedByCamera.putIfAbsent(cameraId, detected);
     }
 
     public void addToLastTracked(int lidarId, TrackedObject tracked) {
-        System.out.println("Adding Tracked by Lidar");
         lastTrackedByLidar.putIfAbsent(lidarId, new ArrayList<>());
         lastTrackedByLidar.get(lidarId).add(tracked);
     }
 
     public void setIfThereIsError(boolean error) {
-        System.out.println("Error: " + error);
         this.error = error;
     }
 

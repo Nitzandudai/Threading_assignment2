@@ -60,7 +60,6 @@ public class MessageBusImpl implements MessageBus {
 		synchronized (m) {
 			synchronized (queue) {
 				queue.add(m);
-				// System.out.println(m.getName() + " subscribed to event " + type.getSimpleName());
 			}
 		}
 	}
@@ -73,7 +72,6 @@ public class MessageBusImpl implements MessageBus {
 		synchronized (m) {
 			synchronized (list) {
 				list.add(m);
-				// System.out.println(m.getName() + " subscribed to broadcast " + type.getSimpleName());
 			}
 		}
 	}
@@ -88,7 +86,6 @@ public class MessageBusImpl implements MessageBus {
 		if (future != null) {
 			synchronized (future) {
 				future.resolve(result);
-				// System.out.println("Event " + e.getClass().getSimpleName() + " completed with result: " + result);
 			}
 		}
 	}
@@ -104,7 +101,6 @@ public class MessageBusImpl implements MessageBus {
 					synchronized (m) {
 						try {
 							PersonalQueues.get(m).put(b);
-							// System.out.println("Broadcast " + b.getClass().getSimpleName() + " sent to " + m.getName());
 						} catch (InterruptedException e) {
 							Thread.currentThread().interrupt();
 						}
@@ -120,12 +116,9 @@ public class MessageBusImpl implements MessageBus {
 		// לא צריך לסנכרן כי המפה כבר מוגדרת ככה
 		Queue<MicroService> queue = eventSubscribers.get(e.getClass()); // מחזיר את התור שמכיל את המיקרו שירותים שמטפלים
 																		// בזה
-		// System.out.println("try lock the queue " + e.getClass().getSimpleName());
 																
 		synchronized (queue) {
-			// System.out.println("the queue locked " + e.getClass().getSimpleName());
 			if (queue == null || queue.isEmpty()) {
-				System.out.println("No subscribers for event " + e.getClass().getSimpleName());
 				return null;
 			}
 
@@ -137,7 +130,6 @@ public class MessageBusImpl implements MessageBus {
 				// נכניס את האירוע לתור האישי של המיקרו שירות
 				try { // לא צריך לסנכרן את התור פה כי הוא מוגדר מראש כתור חוסם
 					microQueue.put(e);
-					// System.out.println("Event " + e.getClass().getSimpleName() + " sent to " + m.getName());
 				} catch (InterruptedException ex) {
 					Thread.currentThread().interrupt();
 				}
@@ -155,7 +147,6 @@ public class MessageBusImpl implements MessageBus {
 	public void register(MicroService m) {
 		synchronized (m) {
 			PersonalQueues.putIfAbsent(m, new LinkedBlockingQueue<Message>());
-			// System.out.println("Registered microservice: " + m.getName());
 		}
 	}
 	// ====================================================================================================================
@@ -178,7 +169,6 @@ public class MessageBusImpl implements MessageBus {
 					list.remove(m);
 				}
 			}
-			System.out.println("Unregistered microservice: " + m.getName());
 		}
 	}
 	// ====================================================================================================================
@@ -186,9 +176,7 @@ public class MessageBusImpl implements MessageBus {
 	@Override
 	public Message awaitMessage(MicroService m) throws InterruptedException {
 		BlockingQueue<Message> microQueue = PersonalQueues.get(m);
-		// System.out.println(m.getName() + " waiting for a message");
 		Message msg = microQueue.take();
-		System.out.println(m.getName() + " received message: " + msg.getClass().getSimpleName());
 		return msg;
 	}
 

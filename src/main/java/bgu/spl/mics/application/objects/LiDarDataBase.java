@@ -138,7 +138,6 @@ public class LiDarDataBase {
                     CompositeKey key = new CompositeKey(id, time);
                     instance.cloudPointsMap.put(key, stamped);
                 }
-                System.out.println("LiDarDataBase: " + instance.cloudPointsMap.size() + " entries loaded.");
                 return instance;
     
             } catch (IOException e) {

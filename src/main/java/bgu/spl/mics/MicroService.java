@@ -93,7 +93,6 @@ public abstract class MicroService implements Runnable {
      * message.
      */
     protected final void terminate() {
-        System.out.println("MicroService " + name + " is terminated");
         this.terminated = true;
         Thread.currentThread().interrupt();
     }
