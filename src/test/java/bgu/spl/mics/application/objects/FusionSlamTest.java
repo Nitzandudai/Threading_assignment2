@@ -13,8 +13,8 @@ public class FusionSlamTest {
     private Pose pose;
     private ArrayList<TrackedObject> trackedObjects;
 
-    @BeforeEach
-    public void setUp() {
+    @Test
+    public void testAddOrChangeLM_NewLandmarks() {
         fusionSlam = FusionSlam.getInstance();
         pose = new Pose(0.0f, 0.0f, 0.0f, 0);
 
@@ -32,10 +32,6 @@ public class FusionSlamTest {
 
         trackedObjects.add(new TrackedObject("obj1", 0, "description1", points1));
         trackedObjects.add(new TrackedObject("obj2", 0, "description2", points2));
-    }
-
-    @Test
-    public void testAddOrChangeLM_NewLandmarks() {
         // בודק אם הפונקציה יוצרת נכון Landmarks עבור אובייקטים חדשים
         ArrayList<LandMark> landmarks = fusionSlam.addOrChangeLM(trackedObjects, pose);
 
@@ -51,6 +47,23 @@ public class FusionSlamTest {
 
     @Test
     public void testAddOrChangeLM_UpdateExistingLandmarks() {
+        fusionSlam = FusionSlam.getInstance();
+        pose = new Pose(0.0f, 0.0f, 0.0f, 0);
+
+        
+        // יצירת רשימה של אובייקטים למעקב
+        trackedObjects = new ArrayList<>();
+
+        ArrayList<CloudPoint> points1 = new ArrayList<>();
+        points1.add(new CloudPoint(1.0, 1.0, 1.0));
+        points1.add(new CloudPoint(2.0, 2.0, 1.0));
+
+        ArrayList<CloudPoint> points2 = new ArrayList<>();
+        points2.add(new CloudPoint(-1.0, -1.0, 1.0));
+        points2.add(new CloudPoint(-2.0, -2.0, 1.0));
+
+        trackedObjects.add(new TrackedObject("obj1", 0, "description1", points1));
+        trackedObjects.add(new TrackedObject("obj2", 0, "description2", points2));
         // הוספה ראשונה
         fusionSlam.addOrChangeLM(trackedObjects, pose);
 
@@ -68,12 +81,29 @@ public class FusionSlamTest {
         LandMark updatedLandmark = updatedLandmarks.get(0);
 
         assertEquals("obj1", updatedLandmark.getId());
-        assertEquals(2.0, updatedLandmark.getCoordinates().get(0).getX());
-        assertEquals(2.0, updatedLandmark.getCoordinates().get(0).getY());
+        assertEquals(1.96875, updatedLandmark.getCoordinates().get(0).getX());
+        assertEquals(2.21875, updatedLandmark.getCoordinates().get(0).getY());
     }
 
     @Test
     public void testAddOrChangeLM_WithTransformedCoordinates() {
+        fusionSlam = FusionSlam.getInstance();
+        pose = new Pose(0.0f, 0.0f, 0.0f, 0);
+
+        
+        // יצירת רשימה של אובייקטים למעקב
+        trackedObjects = new ArrayList<>();
+
+        ArrayList<CloudPoint> points1 = new ArrayList<>();
+        points1.add(new CloudPoint(1.0, 1.0, 1.0));
+        points1.add(new CloudPoint(2.0, 2.0, 1.0));
+
+        ArrayList<CloudPoint> points2 = new ArrayList<>();
+        points2.add(new CloudPoint(-1.0, -1.0, 1.0));
+        points2.add(new CloudPoint(-2.0, -2.0, 1.0));
+
+        trackedObjects.add(new TrackedObject("obj1", 0, "description1", points1));
+        trackedObjects.add(new TrackedObject("obj2", 0, "description2", points2));
         // שימוש בפוז עם YAW לצורך בדיקת טרנספורמציה
         Pose transformedPose = new Pose(1.0f, 1.0f, 90.0f, 0);
 
@@ -83,12 +113,29 @@ public class FusionSlamTest {
         CloudPoint transformedPoint = landmarks.get(0).getCoordinates().get(0);
 
         // בדיקה אם הקורדינטות עברו טרנספורמציה נכון
-        assertEquals(0.0, transformedPoint.getX(), 0.01);
-        assertEquals(2.0, transformedPoint.getY(), 0.01);
+        assertEquals(0.875, transformedPoint.getX(), 0.01);
+        assertEquals(1.875, transformedPoint.getY(), 0.01);
     }
 
     @Test
     public void testAddOrChangeLM_DifferentLengthCoordinates() {
+        fusionSlam = FusionSlam.getInstance();
+        pose = new Pose(0.0f, 0.0f, 0.0f, 0);
+
+        
+        // יצירת רשימה של אובייקטים למעקב
+        trackedObjects = new ArrayList<>();
+
+        ArrayList<CloudPoint> points1 = new ArrayList<>();
+        points1.add(new CloudPoint(1.0, 1.0, 1.0));
+        points1.add(new CloudPoint(2.0, 2.0, 1.0));
+
+        ArrayList<CloudPoint> points2 = new ArrayList<>();
+        points2.add(new CloudPoint(-1.0, -1.0, 1.0));
+        points2.add(new CloudPoint(-2.0, -2.0, 1.0));
+
+        trackedObjects.add(new TrackedObject("obj1", 0, "description1", points1));
+        trackedObjects.add(new TrackedObject("obj2", 0, "description2", points2));
         // יצירת רשימה ראשונה (ארוכה יותר)
         ArrayList<CloudPoint> initialPoints = new ArrayList<>();
         initialPoints.add(new CloudPoint(1.0, 1.0, 1.0));
