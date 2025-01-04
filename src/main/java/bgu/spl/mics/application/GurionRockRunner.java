@@ -17,6 +17,7 @@ import java.util.concurrent.CountDownLatch;
 
 public class GurionRockRunner {
 
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         if (args.length < 1) {
             System.err.println("Usage: java GurionRockRunner <path-to-configuration-file>");

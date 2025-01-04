@@ -1,6 +1,5 @@
 package bgu.spl.mics.application.objects;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -43,6 +42,7 @@ public class FusionSlamTest {
         assertEquals("obj2", lm2.getId());
         assertEquals("description1", lm1.getDescripiot());
         assertEquals("description2", lm2.getDescripiot());
+
     }
 
     @Test
